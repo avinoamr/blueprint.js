@@ -80,42 +80,6 @@
     merge( Blueprint.prototype, Blueprint.Events );
     merge( Blueprint, Blueprint.Events );
 
-    /** Model **/
-    Blueprint.Model = Blueprint.extend( "Model", {
-        save: function() {
-            var ds = this.datastore();
-            ds.save.apply( ds, this, arguments );
-            return this;
-        },
-
-        find: function() {
-            var ds = this.datastore();
-            ds.find.apply( ds, this, arguments );
-            return this;
-        },
-
-        remove: function() {
-            var ds = this.datastore();
-            ds.remove.apply( ds, this, arguments );
-            return this;
-        }
-    });
-
-    /** Datastore **/
-    Blueprint.Datastore = Blueprint.extend( "Datastore", {
-        save: function( model ) {
-            throw new Error( "Not implemented" );
-        },
-
-        find: function( model ) {
-            throw new Error( "Not implemented" );
-        },
-
-        remove: function( model ) {
-            throw new Error( "Not implemented" );
-        }
-    });
-
     // export for both server and client
     this.Blueprint = Blueprint;
 
