@@ -117,11 +117,6 @@
     });
 
     // export for both server and client
-    if ( "undefined" != typeof window ) {
-        window.Blueprint = Blueprint
-    } else if ( module ) {
-        module.exports = Blueprint
-    }
-    return Blueprint;
+    this.Blueprint = Blueprint;
 
-}())
+}).call( this );

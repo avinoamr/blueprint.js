@@ -1,16 +1,16 @@
 var assert = require( "assert" );
-var blueprint = require( "./blueprint" );
+var Blueprint = require( "./blueprint" ).Blueprint;
 
 describe( "blueprint", function() {
 
     it( "creates an empty class with the correct name", function() {
-        var A = blueprint.extend( "A" );
+        var A = Blueprint.extend( "A" );
         assert.equal( A.name, "A" );
     });
 
 
     it( "evaluates instanceof correctly", function() {
-        var Animal = blueprint.extend( "Animal" );
+        var Animal = Blueprint.extend( "Animal" );
         var Dog = Animal.extend( "Dog" );
         var Cat = Animal.extend( "Cat" );
 
@@ -31,7 +31,7 @@ describe( "blueprint", function() {
 
 
     it( "inherits and overrides methods", function() {
-        var Animal = blueprint.extend( "Animal", {
+        var Animal = Blueprint.extend( "Animal", {
             say: function() {
                 throw new Error( "Abstract method not implemented");
             }
@@ -49,13 +49,13 @@ describe( "blueprint", function() {
 
 
     it( "Supports multiple inheritance", function() {
-        var Dog = blueprint.extend( "Dog", {
+        var Dog = Blueprint.extend( "Dog", {
             say: function() {
                 return "Whoof";
             }
         });
 
-        var Echoable = blueprint.extend( "Echoable", {
+        var Echoable = Blueprint.extend( "Echoable", {
             echo: function( something ) {
                 return something;
             }
@@ -74,7 +74,7 @@ describe( "blueprint", function() {
 
 
     it( "supports the events API", function( done ) {
-        var Dog = blueprint.extend( "Dog", {
+        var Dog = Blueprint.extend( "Dog", {
             sleep: function() {
                 this.emit( "sleep", "arg1", "arg2" );
                 return "Zzz...";
