@@ -1,0 +1,9 @@
+{
+    "name": "blueprint",
+    "description": "",
+    "main": "./blueprint",
+    "version": "0.0.1",
+    "devDependencies": {
+        "mocha": "~1.14.0"
+    }
+}
