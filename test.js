@@ -1,9 +1,11 @@
 var assert = require( "assert" );
 var blueprint = require( "./blueprint" );
 
-describe( "Blueprint", function() {
+var Blueprint = blueprint.Blueprint;
+var Datastore = blueprint.Datastore;
+var Model = blueprint.Model;
 
-    var Blueprint = blueprint.Blueprint;
+describe( "Blueprint", function() {
 
     it( "creates an empty class with the correct name", function() {
         var A = Blueprint.extend( "A" );
@@ -113,21 +115,167 @@ describe( "Blueprint", function() {
 
 describe( "Model", function() {
 
-    var Model = blueprint.Model;
+    // reset the datastore for every test
+    beforeEach( function() {
+        Model.datastore( null );
+    });
 
-    it( "forwards all calls to the underlying datastore", function() {
-        var Dog = Model.extend( "Dog", function() {
-            name: null
+    it( "forwards all calls to the underlying datastore", function( done ) {
+        var Dog = Model.extend( "Dog" );
+        var d = new Dog();
+
+        var actions = [];
+        Model.datastore({
+            save: function( model ) {
+                assert.equal( model, d );
+                actions.push( "s" );
+            },
+            load: function( model ) {
+                assert.equal( model, d );
+                actions.push( "l" );
+            },
+            remove: function( model ) {
+                assert.equal( model, d );
+                actions.push( "r" );
+            },
+            find: function( M, criteria ) {
+                assert.equal( M, Dog );
+                assert.deepEqual( criteria, { hello: "world" } );
+                assert.deepEqual( [ "s", "l", "r" ], actions );
+                done();
+            }
         });
 
-        Model.datastore({
-            save: function() {}
-        })
-
-        var d = new Dog();
-        d.name = "Rocky";
-//        d.save()
+        d.save().load().remove();
+        Dog.find( { hello: "world" } );
 
     } );
 
+
+    it( "supports datastore inheritance and override", function( done ) {
+
+        var Dog = Model.extend( "Dog" );
+        var Cat = Model.extend( "Cat" );
+
+        // set the root datastore
+        Model.datastore({
+            save: function( model ) {
+                assert.equal( model.constructor, Cat );
+            }
+        })
+
+        // set a different datastore specifically for dogs
+        Dog.datastore({
+            save: function( model ) {
+                assert.equal( model.constructor, Dog );
+                done();
+            }
+        });
+
+        // save them
+        new Cat().save();
+        new Dog().save();
+
+    } );
+
+
+    it( "supports removal of datastores", function( done ) {
+
+        var Dog = Model.extend( "Dog" );
+
+        var d = new Dog();
+        Model.datastore({
+            save: function( model ) {
+                assert.equal( model, d );
+                done();
+            }
+        });
+
+        Dog.datastore({
+            save: function( model ) {
+                assert( false, "this datastore has been detached" );
+            }
+        });
+
+        Dog.datastore( null );
+        d.save();
+
+    });
+
+
+    it( "throws an error when no datastore is assigned", function() {
+        assert.throws( function() { new Model().save() } );
+    })
+
+});
+
+
+// default in-memory datastore
+describe( "Datastore", function() {
+
+    it( "saves and loads objects", function() {
+        var ds = new Datastore();
+        var m = new Model().extend({
+            id: 5,
+            hello: "world"
+        });
+        ds.save( m );
+
+        m = new Model().extend({ id: 5 });
+        ds.load( m );
+        assert.equal( m.hello, "world" );
+    });
+
+
+    it( "removes objects", function( done ) {
+        var ds = new Datastore();
+        var m = new Model().extend({
+            id: 5,
+            hello: "world"
+        });
+        ds.save( m );
+
+        ds.remove( m );
+        m = new Model().extend({ id: 5 });
+        m.on( "error", function() {
+            done();
+        })
+        ds.load( m );
+    });
+
+
+    it( "generates object IDs", function() {
+        var ds = new Datastore();
+        var m1 = new Model().extend({
+            hello: "world"
+        });
+        var m2 = new Model().extend({
+            foo: "bar"
+        });
+
+        ds.save( m1 ).save( m2 );
+        assert( m1.id );
+        assert( m2.id );
+        assert.notEqual( m1.id, m2.id );
+    });
+
+
+    it( "emits on all operations", function( done ) {
+        var ds = new Datastore();
+
+        var actions = [];
+        var m = new Model()
+            .on( "saved", function() {
+                actions.push( "s" );
+            })
+            .on( "loaded", function() {
+                actions.push( "l" );
+            })
+            .on( "removed", function() {
+                actions.push( "r" );
+                done();
+            });
+
+        ds.save( m ).load( m ).remove( m );
+    })
 });

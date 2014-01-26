@@ -16,7 +16,7 @@
         this.emit( "init" );
     };
 
-    Blueprint.prototype.update = function( obj ) {
+    Blueprint.prototype.extend = function( obj ) {
         return merge( this, obj );
     };
 
@@ -96,26 +96,35 @@
     /** Model **/
     var Model = Blueprint.extend( "Model", {
         save: function() {
-            console.log( this.constructor );
-            return this.constructor.datastore().save( this );
+            this.constructor.datastore().save( this );
+            return this;
         },
         load: function() {
-            return this.constructor.datastore().load( this );
+            this.constructor.datastore().load( this );
+            return this;
         },
         remove: function() {
-            return this.constructor.datastore().remove( this );
+            this.constructor.datastore().remove( this );
+            return this;
         }
     });
 
     Model.find = function( criteria ) {
-        return this.constructor.datastore().find( this.constructor, criteria );
+        return this.datastore().find( this, criteria );
     };
 
     Model.datastore = function( ds ) {
         if ( arguments.length == 0 ) {
-            return this._datastore;
+            var ds = this.prototype._datastore;
+            if ( !ds ) {
+                throw new Error( "No datastore has been assigned" );
+            }
+            return ds;
+        } else if ( ds === null ) {
+            delete this.prototype._datastore;
+        } else {
+            this.prototype._datastore = ds;
         }
-        this._datastore = ds;
         return this;
     };
 
@@ -123,6 +132,7 @@
     var Datastore = Blueprint.extend( "Datastore", {
         init: function( map ) {
             this.map = map || {};
+            Datastore.__id = 0;
         },
 
         key: function( model ) {
@@ -130,22 +140,32 @@
         },
 
         save: function( model ) {
+            if ( !model.id ) {
+                Datastore.__id += 1;
+                model.id = Datastore.__id;
+            }
+
             this.map[ this.key( model ) ] = model.toObject();
             model.emit( "saved" );
-            return model;
+            return this;
         },
 
         load: function( model ) {
-            model.update( this.map[ this.key( model ) ] );
+            var obj = this.map[ this.key( model ) ]
+            if ( !obj ) {
+                var err = new Error( "Unable to load model: not found" );
+                return model.emit( "error", err );
+            }
+            model.extend( obj );
             model.emit( "loaded" );
-            return model;
+            return this;
         },
 
         remove: function( model ) {
             delete this.map[ this.key( model ) ];
             model.emit( "removed" );
-            return model;
-        }
+            return this;
+        },
     });
 
     // export the Blueprint class
