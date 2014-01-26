@@ -1,8 +1,15 @@
 {
     "name": "blueprint",
-    "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
+    "version": "0.0.13",
     "main": "./lib/blueprint",
-    "version": "0.0.11",
+    "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
+    "keywords": [ "blueprint", "model", "database", "schema", "ORM", "DAL", "OOP", "class", "object" ],
+    "author": "Roi Avinoam <avinoamr@gmail.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/avinoamr/blueprint.js.git"
+    },
     "devDependencies": {
         "mocha": "~1.14.0"
     }
