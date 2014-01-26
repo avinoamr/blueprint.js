@@ -1,7 +1,8 @@
-
-// browser tests support
 var assert = require( "assert" );
-var blueprint = require( "./blueprint" );
+
+var blueprint = require( ".." );
+
+
 var Blueprint = blueprint.Blueprint;
 var Datastore = blueprint.Datastore;
 var Model = blueprint.Model;

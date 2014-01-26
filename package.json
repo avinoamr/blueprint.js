@@ -2,7 +2,7 @@
     "name": "blueprint",
     "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
     "main": "./lib/blueprint",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "devDependencies": {
         "mocha": "~1.14.0"
     }
