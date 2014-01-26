@@ -173,4 +173,4 @@
     exports.Model = Model
     exports.Datastore = Datastore
 
-})( typeof exports === "undefined" ? this[ "blueprint" ] = {} : exports );
+})( ( typeof exports == "undefined" ) ? this[ "blueprint" ] = {} : exports );
