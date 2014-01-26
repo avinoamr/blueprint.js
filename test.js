@@ -1,7 +1,9 @@
 var assert = require( "assert" );
-var Blueprint = require( "./blueprint" ).Blueprint;
+var blueprint = require( "./blueprint" );
 
-describe( "blueprint", function() {
+describe( "Blueprint", function() {
+
+    var Blueprint = blueprint.Blueprint;
 
     it( "creates an empty class with the correct name", function() {
         var A = Blueprint.extend( "A" );
@@ -27,6 +29,13 @@ describe( "blueprint", function() {
         assert( new Cat() instanceof Animal );
         assert( new Cat() instanceof Cat );
         assert( !( new Cat() instanceof Dog ) );
+    });
+
+
+    it( "keeps a reference to the constructor", function() {
+        var Dog = Blueprint.extend( "Dog" );
+        assert.equal( new Dog().constructor.name, "Dog" );
+        assert.deepEqual( new Dog().constructor.parents, [ Blueprint ] );
     });
 
 
@@ -99,6 +108,26 @@ describe( "blueprint", function() {
         d2.sleep();
     });
 
+});
 
+
+describe( "Model", function() {
+
+    var Model = blueprint.Model;
+
+    it( "forwards all calls to the underlying datastore", function() {
+        var Dog = Model.extend( "Dog", function() {
+            name: null
+        });
+
+        Model.datastore({
+            save: function() {}
+        })
+
+        var d = new Dog();
+        d.name = "Rocky";
+//        d.save()
+
+    } );
 
 });
