@@ -26,49 +26,15 @@ Subclass Model classes to create your concrete classes:
 var Task = blueprint.Model.extend( "Task", {
     title: String,
     done: Boolean,
+    user_id: Number,
 
     init: function( title ) {
         this.title = title;
     },
 
     toggle: function() {
-        return this.extend({ done: !this.done }).save(); // borrowed
+        return this.extend({ done: !this.done });
     }
 });
 ```
-
-
-
-```javascript
-var Blueprint = require( "blueprint" ).Blueprint; // or -- window.blueprint.Blueprint
-var Task = Blueprint.extend( "Task", {
-    title: "untitled", // defaults
-    done: false,
-
-    init: function( title ) {
-        this.title = title;
-    },
-
-
-});
-
-var task = new Task( "Buy milk" ).toggle(); // check!
-```
-
-This is the most basic way to create a Blueprint object. It also supports
-multiple inheritance:
-
-```javascript
-var ScheduledTask = Task.extend( "ScheduledTask", {
-    eta: null,
-
-    init: function( title, eta ) {
-        Task.prototype.call( this, title ); // super call... we can do better.
-        this.eta = eta;
-    }
-})
-```
-
-
-# Datastore
 
