@@ -29,7 +29,7 @@ var Task = blueprint.Model.extend( "Task", {
     user_id: Number,
 
     init: function( title ) {
-        this.title = title;
+        this.user_id = 42;
     },
 
     toggle: function() {

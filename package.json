@@ -1,6 +1,6 @@
 {
     "name": "blueprint",
-    "version": "0.0.18",
+    "version": "0.0.19",
     "main": "./lib/blueprint",
     "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
     "keywords": [ "blueprint", "model", "database", "schema", "orm", "dal", "oop", "class", "object" ],
