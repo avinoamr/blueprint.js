@@ -281,3 +281,207 @@ describe( "Datastore", function() {
         ds.save( m ).load( m ).remove( m );
     })
 });
+
+
+describe( "Field", function() {
+
+
+    it( "it uses defaults", function() {
+
+        var Dog = Model.extend( "Dog", {
+            title: new blueprint.Field({})
+        });
+
+        assert.equal( new Dog().title, null );
+
+        var Cat = Model.extend( "Cat", {
+            title: new blueprint.Field({ default: "hello" })
+        });
+
+        assert.equal( new Cat().title, "hello" );
+
+    });
+
+
+    it( "required validation (by default)", function() {
+
+        var Dog = Model.extend( "Dog", {
+            title: new blueprint.Field()
+        }).datastore( new Datastore() );
+
+        assert.throws( function() { new Dog().save(); }, function( err ) {
+            assert( err.message.match( /Validation\ Error/i ) );
+            assert( err.message.match( /required/i ) );
+            assert.equal( err.property, "title" );
+            return err instanceof Error
+        } );
+
+        new Dog().extend({ title: "Rocky" }).save(); // no error
+
+        var Cat = Model.extend( "Cat", {
+            title: new blueprint.Field({ required: false })
+        }).datastore( new Datastore() );
+
+        new Cat().save(); // no error as it's not required
+
+    });
+
+});
+
+
+describe( "String", function() {
+
+
+    it( "verifies variable type", function() {
+
+        var Dog = Model.extend( "Dog", {
+            title: new blueprint.String()
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ title: 100 }); // invalid
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /not a string/i ) );
+            return true;
+        } );
+
+        d.extend({ title: "cookie" });
+        d.save(); // no errors
+
+    });
+
+
+    it( "minimum and maximum values", function() {
+        var Dog = Model.extend( "Dog", {
+            title: new blueprint.String({ min: 3, max: 5 })
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ title: "ab" });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /minimum/i ) );
+            return true;
+        } );
+
+        d.extend({ title: "abcdef" });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /maximum/i ) );
+            return true;
+        } );
+
+        d.extend({ title: "abcde" }).save(); // exactly 5 - no error
+        d.extend({ title: "abc" }).save(); // exactly 3 - no error
+    })
+
+
+    it( "matches regexp", function() {
+        var Dog = Model.extend( "Dog", {
+            title: new blueprint.String({ regexp: /^[a-zA-Z].*/ })
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ title: "5ab" });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /regexp/i ) );
+            return true;
+        } );
+
+        d.extend({ title: "ab5" }).save(); // no error
+    } );
+
+});
+
+
+describe( "Number", function() {
+
+    it( "verified variable type is a number", function() {
+        var Dog = Model.extend( "Dog", {
+            age: new blueprint.Number()
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ age: "hello" });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /not a number/i ) );
+            return true;
+        } );
+
+        d.extend({ age: 5 }).save(); // no error
+    } );
+
+
+    it( "minimum and maximum values", function() {
+        var Dog = Model.extend( "Dog", {
+            age: new blueprint.Number({ min: 0, max: 20 })
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ age: -1 });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /minimum/i ) );
+            return true;
+        } );
+
+        d.extend({ age: 21 });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /maximum/i ) );
+            return true;
+        } );
+
+        d.extend({ age: 0 }).save();
+         d.extend({ age: 20 }).save();
+
+    });
+
+});
+
+
+describe( "List", function() {
+
+    it( "verified variable type is an array", function() {
+        var Dog = Model.extend( "Dog", {
+            owners: new blueprint.List()
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ owners: 123 });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /not a list/i ) );
+            return true;
+        } );
+
+        d.extend({ owners: [] }).save();
+    });
+
+
+    it( "minimum and maximum values", function() {
+        var Dog = Model.extend( "Dog", {
+            owners: new blueprint.List({ min: 1, max: 3 })
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ owners: [] });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /minimum/i ) );
+            return true;
+        } );
+
+        d.extend({ owners: [ 1, 2, 3, 4 ] });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /maximum/i ) );
+            return true;
+        } );
+
+        d.extend({ owners: [ 1 ] }).save();
+        d.extend({ owners: [ 1, 2, 3 ] }).save();
+    });
+
+
+    it( "validates recursively the items in the list", function() {
+        var Dog = Model.extend( "Dog", {
+            nicknames: new blueprint.List({ of: new blueprint.String() })
+        }).datastore( new Datastore() );
+
+
+        var d = new Dog().extend({ nicknames: [ "rocky", 5 ] });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /not a string/i ) );
+            return true;
+        } );
+
+        d.extend({ nicknames: [ "rocky", "browney" ] }).save();
+    });
+});
