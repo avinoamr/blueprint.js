@@ -28,7 +28,7 @@ var Task = blueprint.Model.extend( "Task", {
     done: Boolean,
     user_id: Number,
 
-    init: function( title ) {
+    init: function() {
         this.user_id = 42;
     },
 
@@ -38,7 +38,7 @@ var Task = blueprint.Model.extend( "Task", {
 });
 ```
 
-Attach a Datastore to the Model. A Datastore is an adapter that interacts with 
+Attach a Datastore to the Model. A Datastore is an adapter that interacts with
 a specific database in order to save models to that database or read models from
 it. Blueprint includes a simple in-memory datastore, which can be easily be
 extended for other databases:
@@ -51,6 +51,3 @@ blueprint.Model.datastore( new blueprint.Datastore() );
 You are encouraged to subclass from the Datastore class, implement the `save()`,
 `find()` and `remove()` methods, and use it for your projects - or share it with
 me and I'll add a link to it here.
-
-
-
