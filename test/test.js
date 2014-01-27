@@ -485,3 +485,22 @@ describe( "List", function() {
         d.extend({ nicknames: [ "rocky", "browney" ] }).save();
     });
 });
+
+
+describe( "Boolean", function() {
+
+    it( "verified variable type is a bool", function() {
+        var Dog = Model.extend( "Dog", {
+            happy: new blueprint.Boolean()
+        }).datastore( new Datastore() );
+
+        var d = new Dog().extend({ happy: "okay" });
+        assert.throws( function() { d.save(); }, function( err ) {
+            assert( err.message.match( /not a boolean/i ) );
+            return true;
+        } );
+
+        d.extend({ happy: true }).save();
+    });
+
+});
