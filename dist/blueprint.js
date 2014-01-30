@@ -32,17 +32,21 @@ merge( Blueprint.prototype, {
         this.events().on( event, listener );
         return this;
     },
-    off: function( event, listener ) {
-        this.events().removeListener( event, listener );
-        return this;
-    },
     once: function( event, listener ) {
         this.events().once( event, listener );
         return this;
     },
+    off: function( event, listener ) {
+        if ( this.__events ) {
+            this.events().removeListener( event, listener );
+        }
+        return this;
+    },
     emit: function( event ) {
-        var es = this.events()
-        es.emit.apply( es, arguments );
+        if ( this.__events ) {
+            var es = this.events()
+            es.emit.apply( es, arguments );
+        }
         return this;
     },
 
