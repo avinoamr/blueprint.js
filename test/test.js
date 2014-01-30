@@ -1,7 +1,5 @@
 var assert = require( "assert" );
-
 var blueprint = require( ".." );
-
 
 var Blueprint = blueprint.Blueprint;
 var Datastore = blueprint.Datastore;
