@@ -110,6 +110,16 @@ describe( "Blueprint", function() {
         d2.sleep();
     });
 
+
+    it( "converts to a normal object without private variables", function() {
+        var b = new Blueprint({
+            hello: "world"
+        });
+        b.on( "something", function() {});
+
+        assert.deepEqual( b.toObject(), { hello: "world" });
+    } );
+
 });
 
 

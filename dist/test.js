@@ -14,13 +14,40 @@ var merge = function( obj ) {
 
 // Blueprint
 var Blueprint = function Blueprint( opts ) {
-    events.EventEmitter.call( this );
     this.extend( opts ).init();
 }
 util.inherits( Blueprint, events.EventEmitter );
 
 merge( Blueprint.prototype, {
-    off: Blueprint.prototype.removeListener,
+
+    // lazy proxy to events emitter
+    // avoids polluting the object and memory with unused event emitter
+    // data while most objects may not use it at all.
+    events: function() {
+        if ( !this.__events ) {
+            this.__events = new events.EventEmitter();
+        }
+        return this.__events;
+    },
+    on: function( event, listener ) {
+        this.events().on( event, listener );
+        return this;
+    },
+    off: function( event, listener ) {
+        this.events().removeListener( event, listener );
+        return this;
+    },
+    once: function( event, listener ) {
+        this.events().once( event, listener );
+        return this;
+    },
+    emit: function( event ) {
+        var es = this.events()
+        es.emit.apply( es, arguments );
+        return this;
+    },
+
+    // blueprint properties
     init: function() {},
     extend: function( obj ) {
         return merge( this, obj );
@@ -28,9 +55,13 @@ merge( Blueprint.prototype, {
     toObject: function() {
         var obj = {};
         for ( var name in this ) {
-            if ( this.hasOwnProperty( name ) ) {
-                obj[ name ] = this[ name ];
+            if ( name.substr( 0, 2 ) == "__" ) {
+                // skip internal auxiliary variables
+                continue;
+            } else if ( !this.hasOwnProperty( name ) ) {
+                continue;
             }
+            obj[ name ] = this[ name ];
         }
         return obj;
     }
@@ -1717,6 +1748,16 @@ describe( "Blueprint", function() {
         d1.sleep()
         d2.sleep();
     });
+
+
+    it( "converts to a normal object without private variables", function() {
+        var b = new Blueprint({
+            hello: "world"
+        });
+        b.on( "something", function() {});
+
+        assert.deepEqual( b.toObject(), { hello: "world" });
+    } );
 
 });
 
