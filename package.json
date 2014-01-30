@@ -1,6 +1,6 @@
 {
     "name": "blueprint",
-    "version": "0.0.24",
+    "version": "0.0.25",
     "main": "./lib/blueprint",
     "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
     "keywords": [ "blueprint", "model", "database", "schema", "orm", "dal", "oop", "class", "object" ],
@@ -17,6 +17,7 @@
     "scripts": {
         "pretest": "npm run-script build",
         "test": "node_modules/mocha/bin/mocha",
-        "build": "node_modules/browserify/bin/cmd.js lib/blueprint.js --standalone blueprint -o dist/blueprint.js;node_modules/browserify/bin/cmd.js test/test.js --standalone tests -o dist/test.js"
+        "build": "node_modules/browserify/bin/cmd.js lib/blueprint.js --standalone blueprint -o dist/blueprint.js;node_modules/browserify/bin/cmd.js test/test.js --standalone tests -o dist/test.js",
+        "start": "python -m SimpleHTTPServer"
     }
 }
