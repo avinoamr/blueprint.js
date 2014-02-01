@@ -11,13 +11,6 @@
         "url": "https://github.com/avinoamr/blueprint.js.git"
     },
     "devDependencies": {
-        "mocha": "~1.14.0",
-        "browserify": "~3.24.8"
-    },
-    "scripts": {
-        "pretest": "npm run-script build",
-        "test": "node_modules/mocha/bin/mocha",
-        "build": "node_modules/browserify/bin/cmd.js lib/blueprint.js --standalone blueprint -o dist/blueprint.js;node_modules/browserify/bin/cmd.js test/test.js --standalone tests -o dist/test.js",
-        "start": "python -m SimpleHTTPServer"
+        "mocha": "~1.14.0"
     }
 }
