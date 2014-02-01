@@ -148,9 +148,9 @@ describe( "Model", function() {
                 assert.equal( model, d );
                 actions.push( "r" );
             },
-            find: function( M, criteria ) {
-                assert.equal( M, Dog );
-                assert.deepEqual( criteria, { hello: "world" } );
+            find: function( cursor ) {
+                assert.equal( cursor.Model, Dog );
+                assert.deepEqual( cursor.criteria, { hello: "world" } );
                 assert.deepEqual( [ "s", "l", "r" ], actions );
                 done();
             }
