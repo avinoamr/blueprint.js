@@ -150,6 +150,25 @@ describe( "blueprint", function() {
         assert.equal( d2.args[ 0 ], "hello" )
     })
 
+    it( "can extend non-blueprint classes", function() {
+        var Class = function() {
+            this.one = "two";
+        };
+        Class.prototype.hello = function() {
+            return "world";
+        };
+        Class.foo = function() {
+            return "bar";
+        }
+        var Dog = blueprint( Class )
+            .create();
+
+        assert.equal( Dog.foo(), "bar" );
+        assert.equal( new Dog().hello(), "world" );
+        assert.equal( new Dog().constructor, Dog );
+        assert.equal( new Dog().one, "two" );
+    })
+
 });
 
 describe( "built-in decorators", function() {
