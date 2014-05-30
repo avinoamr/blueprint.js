@@ -3,7 +3,7 @@ blueprint.js
 
 A sleek and simple interface for building powerful Javascript classes
 
-> Inspired by a brilliant [talk](https://www.youtube.com/watch?v=9LfmrkyP81M) by David Heinemeier Hansson (creator of Ruby on Rails), I started thinking about code clarity in Javascript, in what can be done to make the language more expressive and powerful, but also more concise. Blueprint is an attempt to focus on one aspect of code clarity: minimalistic single-purpoe functions. This is achieved by borrowing Python's function decorators in order to separate side-effects and setup logic from the core intention of the function itself.
+> Inspired by a brilliant [talk](https://www.youtube.com/watch?v=9LfmrkyP81M) by David Heinemeier Hansson (creator of Ruby on Rails), I started thinking about code clarity in Javascript, in what can be done to make the language more expressive and powerful, but also more concise. Blueprint is an attempt to focus on one aspect of code clarity: minimalistic single-purpose functions. This is achieved by borrowing Python's function decorators in order to separate side-effects and setup logic from the core intention of the function itself.
 
 # Installation
 
