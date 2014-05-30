@@ -1,16 +1,9 @@
 blueprint.js
 ============
 
-A database agnostic model layer and classic OOP implementation designed for
-reusability between the client and server.
+A sleek and simple interface for building powerful Javascript classes
 
-> While there are many ORM libraries out there, it's difficult to find one that
-allows reusability between the client and server. A model layer, representing
-the core business logic of the application, should have no context, and can
-therefor have the same representation on the client as it does on the server
-with the exception of the persistence layer. Blueprint is designed specifically
-for this architecture: create one model - reuse it everywhere. Oh, and there's
-also a minimalistic OOP implementation underneath.
+> Inspired by a brilliant talk by David Heinemeier Hansson (creator of Ruby on Rails), I started thinking about code clarity in Javascript, in what can be done to make the language more expressive and powerful, but also more concise. Blueprint is an attempt to focus on one aspect of code clarity: minimalistic single-purpoe functions. This is achieved by borrowing Python's function decorators in order to separate side-effects and setup logic from the core intention of the function itself.
 
 # Installation
 
@@ -23,31 +16,213 @@ $ npm install blueprint
 Create your Model classes by subclassing other Model classes:
 
 ```javascript
-var Task = blueprint.Model.extend( "Task", {
-    title: String,
-    done: Boolean,
-    user_id: Number,
-
-    init: function() {
-        this.user_id = 42;
-    },
-
-    toggle: function() {
-        return this.extend({ done: !this.done });
-    }
-});
+var Task = blueprint( "Task" )
+    .define( "title", null )
+    .define( "done", false )
+    
+    .static() // defines a static member on the class
+    .define( "tasks", [] )
+    
+    // constructor
+    .init(function( title ) {
+        this.title = title;
+        this.constructor.tasks.push( this )
+    })
+    
+    .alias( "flip" )
+    .define( "toggle", function() {
+        this.done = !this.done;
+        return this;
+    })
+    
+    .trigger( "remove" ) // trigger the remove event before invocation
+    .decorate( log ) // inline custom decoration for logging
+    .define( "remove", function() {
+        var tasks = this.constructor.tasks;
+        var i = tasks.indexOf( this );
+        tasks.splice( i, 1 );
+    })
+    
+    .create(); // build and return the class from the Blueprint
 ```
 
-Attach a Datastore to the Model. A Datastore is an adapter that interacts with
-a specific database in order to save models to that database or read models from
-it. Blueprint includes a simple in-memory datastore, which can be easily be
-extended for other databases:
-
+Simply put, Blueprint is an API for constructing classes. Once the class is fully defined, call `.create()` to receive it's final constructor. You can also use it to extend external classes, like Backbone Models:
 
 ```javascript
-blueprint.Model.datastore( new blueprint.Datastore() );
+var User = blueprint( Backbone.Model )
+    .define( "defaults", { name: "", age: null } )
+    
+    .thenable() // makes save return a new Promise
+    .define( "save", function( attrs, options, fulfill, reject ) {
+        options || ( options = {} );
+        options.success = function( model ) {
+            fulfill( model );
+        };
+        options.error = function( model, err ) {
+            reject( err );
+        }
+        Backbone.Model.prototype.save.call( this, attrs, options )
+    })
+    
+    .create();
 ```
 
-You are encouraged to subclass from the Datastore class, implement the `save()`,
-`find()` and `remove()` methods, and use it for your projects - or share it with
-me and I'll add a link to it here.
+Blueprint encourages the use of Promises, instead of the traditional nesting callbacks, and ships with two built-in decorations to make the construction of complex async code easier to read. In the example above, we converted the save method to return a thenable object which can be accessed like this:
+
+```javascript
+new User({ name: "John", age: 29 })
+    .save()
+    .then(function(model) {
+        // user is saved successfully
+    })
+    .catch(function(err) {
+        // something went wrong
+    });
+```
+
+Of course we can chain several thenable methods one after the other, using the `then()` directive, in order to flatten complex functions:
+
+```javascript
+var Settings = blueprint()
+    
+    .thenable()
+    .define( "read", function( fulfill, reject ) {
+        fs.readFile( "settings.json", function( err, data ) {
+            if ( err ) reject( err )
+            else fulfill( data )
+        });
+    })
+    .then( String )
+    .then( JSON.parse )
+    
+    .thenable()
+    .then(function( data, fulfill, reject ) {
+        data.lastopen = new Date().toString();
+        fs.writeFile( "settings.json", JSON.stringify( data ), function( err ) {
+            if ( err ) reject( err );
+            else fulfill( data )
+        })
+    })
+    
+    .create()
+```
+
+## Decorators
+
+Blueprint ships with the following decorators:
+
+#### .static()
+Defines the next property on the class, instead of the prototype:
+
+```javascript
+blueprint()
+    .static()
+    .define( "hello", "world" )
+    .create()
+    .hello; // == "world"
+```
+    
+#### .alias( name )
+Defines an alias for the next property:
+
+```javascript
+blueprint()
+    .alias( "foo" )
+    .define( "bar", 15 )
+    .create()
+    .prototype.foo // == prototype.bar == 15
+```
+
+#### .bind( obj )
+Defines the next method to run with the provided context, instead of the default instance as `this`:
+
+```javascript
+blueprint()
+    .bind({ hello: "world" }) // can also be a function that returns the object
+    .define( "foo", function() {
+        return this.hello // returns "world"
+    })
+    .create()
+```
+
+#### .trigger( event_name )
+Decorates the next method to trigger an event when before it's invoked:
+
+```javascript
+var Class = blueprint()
+    .trigger( "hello" )
+    .define( "world", function() {} )
+    .create();
+    
+new Class()
+    .on( "hello", function( ev, options ) {})
+    .world();
+```
+
+#### .thenable()
+Decorates the next method to return a Promise (the real return value is ignored) and also automatically appends callbacks for fulfilling and rejecting the promise. This is the Blueprint approach to building async code.
+
+```javascript
+var FileReader = blueprint()
+    .thenable()
+    .define( "readfile", function( fname, fulfill, reject ) {
+        fs.readFile( fname, function( err, data ) {
+            if ( err ) reject( err )
+            else fulfill( data )
+        });
+    })
+    .create();
+    
+new FileReader()
+    .readfile( "hello" )
+    .then(function( data ) {})
+    .catch(function( err ) {});
+```
+
+#### .private()
+Work in progress. Contributions encouraged. Will define a method or property to only be accessible from within the class's methods. 
+
+#### .property()
+Work in progress. Contributions encouraged. Will allow the definition of property getters and setters.
+
+## Custom Decorators
+
+You can easily define your own custom decorators, using the `.decorate()` directive. Decorators, are simply functions that receive some previous defition of a property or method, and returns a new one:
+
+```javascript
+var log_decorator = function( name, fn ) {
+    return function() {
+        console.log( name, arguments );
+        return fn.apply( this, arguments );
+    }
+};
+
+var Class = blueprint()
+    .decorate( log_decorator )
+    .define( "hello", function() {})
+    .create();
+    
+new Class().hello( 1, 2 ); // will log: "hello", [ 1, 2 ]
+```
+
+That's it. You can use decorators to augument the class in any possible way, especially for separating side-effects and different aspects of the code out of the core function/property. You can also define a named decorator for easy re-usability (beware of conflicts):
+
+```javascript
+blueprint()
+    .decorate( "log", function() { return log_decorator } )
+    
+    .log()
+    .define( "hello", function() {})
+    
+    .log()
+    .define( "world", function() {})
+    
+    .create();
+```
+
+    
+
+
+
+
+
