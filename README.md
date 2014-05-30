@@ -181,6 +181,7 @@ new FileReader()
 
 #### Work in progress
 The following decorators are intended to be included in Blueprint. Contributions are welcome:
+
 1. `.private()` - private members
 1. `.property()` - property getter/setter
 1. `.expect()` - function input validation
