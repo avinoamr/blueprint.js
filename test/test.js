@@ -207,6 +207,22 @@ describe( "built-in decorators", function() {
         assert.equal( new A().hello(), 12 );
         assert.equal( new A().world(), 12 );
     });
+
+    it( "trigger()", function( done ) {
+        var A = blueprint()
+            .trigger( "hello_ev" )
+            .define( "hello", function() {
+                return "world";
+            })
+            .create();
+
+        new A().on( "hello_ev", function( name, options ) {
+            assert.equal( name, "hello_ev" );
+            assert.equal( options.arguments[ 0 ], 1 );
+            assert.equal( options.arguments[ 1 ], 2 );
+            done();
+        }).hello( 1, 2 );
+    });
 })
 
 describe( "thenable, then and catch", function() {

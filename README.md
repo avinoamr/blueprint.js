@@ -67,7 +67,7 @@ var User = blueprint( Backbone.Model )
     .create();
 ```
 
-Blueprint encourages the use of Promises, instead of the traditional nesting callbacks, and ships with two built-in decorations to make the construction of complex async code easier to read. In the example above, we converted the save method to return a thenable object which can be accessed like this:
+Blueprint encourages the use of Promises, instead of the traditional nesting callbacks. In the example above, we converted the save method to return a thenable object which can be accessed like this:
 
 ```javascript
 new User({ name: "John", age: 29 })
@@ -109,7 +109,7 @@ var Settings = blueprint()
 
 ## Decorators
 
-Blueprint ships with the following decorators:
+Blueprint includes with the following built-in decorators:
 
 #### .static()
 Defines the next property on the class, instead of the prototype:
@@ -179,11 +179,12 @@ new FileReader()
     .catch(function( err ) {});
 ```
 
-#### .private()
-Work in progress. Contributions encouraged. Will define a method or property to only be accessible from within the class's methods. 
-
-#### .property()
-Work in progress. Contributions encouraged. Will allow the definition of property getters and setters.
+#### Work in progress
+The following decorators are intended to be included in Blueprint. Contributions are welcome:
+1. `.private()` - private members
+1. `.property()` - property getter/setter
+1. `.expect()` - function input validation
+1. `.overload()` - function overloading
 
 ## Custom Decorators
 
