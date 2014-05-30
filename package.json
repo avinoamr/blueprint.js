@@ -1,9 +1,9 @@
 {
     "name": "blueprint",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "main": "./lib/blueprint",
-    "description": "A database agnostic model layer and OOP implementation designed for reusability between the client and server",
-    "keywords": [ "blueprint", "model", "database", "schema", "orm", "dal", "oop", "class", "object" ],
+    "description": "A sleek and simple interface for building powerful Javascript classes",
+    "keywords": [ "blueprint", "oop", "class", "object" ],
     "author": "Roi Avinoam <avinoamr@gmail.com>",
     "license": "MIT",
     "repository": {
