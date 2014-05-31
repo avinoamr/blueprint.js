@@ -167,6 +167,7 @@ describe( "blueprint", function() {
         assert.equal( new Dog().hello(), "world" );
         assert.equal( new Dog().constructor, Dog );
         assert.equal( new Dog().one, "two" );
+        assert( new Dog() instanceof Class );
     })
 
 });
