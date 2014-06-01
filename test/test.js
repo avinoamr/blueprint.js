@@ -361,392 +361,167 @@ describe( "Promise", function() {
 });
 
 
-// describe( "Model", function() {
+describe( "Model", function() {
 
-//     // reset the datastore for every test
-//     beforeEach( function() {
-//         Model.datastore( null );
-//     });
+    var Model = blueprint.Model;
 
-//     it( "forwards all calls to the underlying datastore", function( done ) {
-//         var Dog = Model.extend( "Dog" );
-//         var d = new Dog();
+    // reset the backend for every test
+    beforeEach( function() {
+        Model.backend( null );
+    });
 
-//         var actions = [];
-//         Model.datastore({
-//             save: function( model ) {
-//                 assert.equal( model, d );
-//                 actions.push( "s" );
-//             },
-//             load: function( model ) {
-//                 assert.equal( model, d );
-//                 actions.push( "l" );
-//             },
-//             remove: function( model ) {
-//                 assert.equal( model, d );
-//                 actions.push( "r" );
-//             },
-//             find: function( cursor ) {
-//                 assert.equal( cursor.Model, Dog );
-//                 assert.deepEqual( cursor.criteria, { hello: "world" } );
-//                 assert.deepEqual( [ "s", "l", "r" ], actions );
-//                 done();
-//             }
-//         });
+    it( "forwards all calls to the underlying backend", function( done ) {
+        var Dog = Model.extend( "Dog" ).create();
 
-//         d.save().load().remove();
-//         Dog.find( { hello: "world" } );
+        var actions = [];
+        Model.backend({
+            save: function( model ) {
+                assert.equal( model, d );
+                actions.push( "s" );
+            },
+            load: function( model ) {
+                assert.equal( model, d );
+                actions.push( "l" );
+            },
+            remove: function( model ) {
+                assert.equal( model, d );
+                actions.push( "r" );
+            },
+            find: function( Model, cursor ) {
+                assert.equal( Model, Dog );
+                assert.deepEqual( cursor.query(), { hello: "world" } );
+                assert.deepEqual( [ "s", "l", "r" ], actions );
+                done();
+            }
+        });
 
-//     } );
+        var d = new Dog();
+        d.save()
+        d.load()
+        d.remove()
+        Dog.find( { hello: "world" } );
 
-
-//     it( "supports datastore inheritance and override", function( done ) {
-
-//         var Dog = Model.extend( "Dog" );
-//         var Cat = Model.extend( "Cat" );
-
-//         // set the root datastore
-//         Model.datastore({
-//             save: function( model ) {
-//                 assert.equal( model.constructor, Cat );
-//             }
-//         })
-
-//         // set a different datastore specifically for dogs
-//         Dog.datastore({
-//             save: function( model ) {
-//                 assert.equal( model.constructor, Dog );
-//                 done();
-//             }
-//         });
-
-//         // save them
-//         new Cat().save();
-//         new Dog().save();
-
-//     } );
+    });
 
 
-//     it( "supports removal of datastores", function( done ) {
+    it( "supports backend inheritance and override", function( done ) {
 
-//         var Dog = Model.extend( "Dog" );
+        var Dog = Model.extend( "Dog" ).create();
+        var Cat = Model.extend( "Cat" ).create();
 
-//         var d = new Dog();
-//         Model.datastore({
-//             save: function( model ) {
-//                 assert.equal( model, d );
-//                 done();
-//             }
-//         });
+        // set the root datastore
+        Model.backend({
+            save: function( model ) {
+                assert.equal( model.constructor, Cat );
+            }
+        })
 
-//         Dog.datastore({
-//             save: function( model ) {
-//                 assert( false, "this datastore has been detached" );
-//             }
-//         });
+        // set a different datastore specifically for dogs
+        Dog.backend({
+            save: function( model ) {
+                assert.equal( model.constructor, Dog );
+                done();
+            }
+        });
 
-//         Dog.datastore( null );
-//         d.save();
+        // save them
+        new Cat().save();
+        new Dog().save();
 
-//     });
+    });
 
 
-//     it( "throws an error when no datastore is assigned", function() {
-//         assert.throws( function() { new Model().save() } );
-//     })
+    it( "supports removal of backends", function( done ) {
 
-// });
+        var Dog = Model.extend( "Dog" ).create();
+
+        var d = new Dog();
+        Model.backend({
+            save: function( model ) {
+                assert.equal( model, d );
+                done();
+            }
+        });
+
+        Dog.backend({
+            save: function( model ) {
+                assert( false, "this backend has been detached" );
+            }
+        });
+
+        Dog.backend( null );
+        d.save();
+
+    });
+
+
+    it( "throws an error when no backend is assigned", function() {
+        assert.throws( function() { new Model().save() } );
+    })
+
+});
 
 
 // // default in-memory datastore
-// describe( "Datastore", function() {
-
-//     it( "saves and loads objects", function() {
-//         var ds = new Datastore();
-//         var m = new Model().extend({
-//             id: 5,
-//             hello: "world"
-//         });
-//         ds.save( m );
-
-//         m = new Model().extend({ id: 5 });
-//         ds.load( m );
-//         assert.equal( m.hello, "world" );
-//     });
-
-
-//     it( "removes objects", function( done ) {
-//         var ds = new Datastore();
-//         var m = new Model().extend({
-//             id: 5,
-//             hello: "world"
-//         });
-//         ds.save( m );
-
-//         ds.remove( m );
-//         m = new Model().extend({ id: 5 });
-//         m.on( "error", function() {
-//             done();
-//         })
-//         ds.load( m );
-//     });
-
-
-//     it( "generates object IDs", function() {
-//         var ds = new Datastore();
-//         var m1 = new Model().extend({
-//             hello: "world"
-//         });
-//         var m2 = new Model().extend({
-//             foo: "bar"
-//         });
-
-//         ds.save( m1 ).save( m2 );
-//         assert( m1.id );
-//         assert( m2.id );
-//         assert.notEqual( m1.id, m2.id );
-//     });
-
-
-//     it( "emits on all operations", function( done ) {
-//         var ds = new Datastore();
-
-//         var actions = [];
-//         var m = new Model()
-//             .on( "saved", function() {
-//                 actions.push( "s" );
-//             })
-//             .on( "loaded", function() {
-//                 actions.push( "l" );
-//             })
-//             .on( "removed", function() {
-//                 actions.push( "r" );
-//                 done();
-//             });
-
-//         ds.save( m ).load( m ).remove( m );
-//     })
-// });
-
-
-// describe( "Field", function() {
-
-
-//     it( "it uses defaults", function() {
-
-//         var Dog = Model.extend( "Dog", {
-//             title: new blueprint.Field({})
-//         });
-
-//         assert.equal( new Dog().title, null );
-
-//         var Cat = Model.extend( "Cat", {
-//             title: new blueprint.Field({ default: "hello" })
-//         });
-
-//         assert.equal( new Cat().title, "hello" );
-
-//     });
-
-
-//     it( "required validation (by default)", function() {
-
-//         var Dog = Model.extend( "Dog", {
-//             title: new blueprint.Field()
-//         }).datastore( new Datastore() );
-
-//         assert.throws( function() { new Dog().save(); }, function( err ) {
-//             assert( err.message.match( /Validation\ Error/i ) );
-//             assert( err.message.match( /required/i ) );
-//             assert.equal( err.property, "title" );
-//             return err instanceof Error
-//         } );
-
-//         new Dog().extend({ title: "Rocky" }).save(); // no error
-
-//         var Cat = Model.extend( "Cat", {
-//             title: new blueprint.Field({ required: false })
-//         }).datastore( new Datastore() );
-
-//         new Cat().save(); // no error as it's not required
-
-//     });
-
-// });
-
-
-// describe( "String", function() {
-
-
-//     it( "verifies variable type", function() {
-
-//         var Dog = Model.extend( "Dog", {
-//             title: new blueprint.String()
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ title: 100 }); // invalid
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /not a string/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ title: "cookie" });
-//         d.save(); // no errors
-
-//     });
-
-
-//     it( "minimum and maximum values", function() {
-//         var Dog = Model.extend( "Dog", {
-//             title: new blueprint.String({ min: 3, max: 5 })
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ title: "ab" });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /minimum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ title: "abcdef" });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /maximum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ title: "abcde" }).save(); // exactly 5 - no error
-//         d.extend({ title: "abc" }).save(); // exactly 3 - no error
-//     })
-
-
-//     it( "matches regexp", function() {
-//         var Dog = Model.extend( "Dog", {
-//             title: new blueprint.String({ regexp: /^[a-zA-Z].*/ })
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ title: "5ab" });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /regexp/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ title: "ab5" }).save(); // no error
-//     } );
-
-// });
-
-
-// describe( "Number", function() {
-
-//     it( "verified variable type is a number", function() {
-//         var Dog = Model.extend( "Dog", {
-//             age: new blueprint.Number()
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ age: "hello" });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /not a number/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ age: 5 }).save(); // no error
-//     } );
-
-
-//     it( "minimum and maximum values", function() {
-//         var Dog = Model.extend( "Dog", {
-//             age: new blueprint.Number({ min: 0, max: 20 })
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ age: -1 });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /minimum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ age: 21 });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /maximum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ age: 0 }).save();
-//          d.extend({ age: 20 }).save();
-
-//     });
-
-// });
-
-
-// describe( "List", function() {
-
-//     it( "verified variable type is an array", function() {
-//         var Dog = Model.extend( "Dog", {
-//             owners: new blueprint.List()
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ owners: 123 });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /not a list/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ owners: [] }).save();
-//     });
-
-
-//     it( "minimum and maximum values", function() {
-//         var Dog = Model.extend( "Dog", {
-//             owners: new blueprint.List({ min: 1, max: 3 })
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ owners: [] });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /minimum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ owners: [ 1, 2, 3, 4 ] });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /maximum/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ owners: [ 1 ] }).save();
-//         d.extend({ owners: [ 1, 2, 3 ] }).save();
-//     });
-
-
-//     it( "validates recursively the items in the list", function() {
-//         var Dog = Model.extend( "Dog", {
-//             nicknames: new blueprint.List({ of: new blueprint.String() })
-//         }).datastore( new Datastore() );
-
-
-//         var d = new Dog().extend({ nicknames: [ "rocky", 5 ] });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /not a string/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ nicknames: [ "rocky", "browney" ] }).save();
-//     });
-// });
-
-
-// describe( "Boolean", function() {
-
-//     it( "verified variable type is a bool", function() {
-//         var Dog = Model.extend( "Dog", {
-//             happy: new blueprint.Boolean()
-//         }).datastore( new Datastore() );
-
-//         var d = new Dog().extend({ happy: "okay" });
-//         assert.throws( function() { d.save(); }, function( err ) {
-//             assert( err.message.match( /not a boolean/i ) );
-//             return true;
-//         } );
-
-//         d.extend({ happy: true }).save();
-//     });
-
-// });
+describe( "Backend", function() {
+
+    var Model = blueprint.Model;
+    var MemoryBackend = blueprint.MemoryBackend;
+
+    it( "saves and loads objects", function() {
+        var be = new MemoryBackend();
+        var m = new Model({ id: 5, hello: "world" })
+        be.save( m, {} );
+
+        m = new Model({ id: 5 });
+        be.load( m, {} );
+        assert.equal( m.hello, "world" );
+    });
+
+
+    it( "removes objects", function( done ) {
+        var be = new MemoryBackend();
+        var m = new Model({ id: 5, hello: "world" });
+        be.save( m, {} );
+
+        be.remove( m, {} );
+        m = new Model({ id: 5 });
+        be.load( m, {} ).catch(function( e ) {
+            assert( String( e ).match( /not found/ ) );
+            done();
+        })
+    });
+
+
+    it( "generates object IDs", function() {
+        var be = new MemoryBackend();
+        var m1 = new Model({ hello: "world" });
+        var m2 = new Model({ foo: "bar" });
+
+        be.save( m1, {} )
+        be.save( m2, {} );
+        assert( m1.id );
+        assert( m2.id );
+        assert.notEqual( m1.id, m2.id );
+    });
+
+
+    // it( "emits on all operations", function( done ) {
+    //     var be = new MemoryBackend();
+
+    //     var actions = [];
+    //     var m = new Model()
+    //         .on( "saved", function() {
+    //             actions.push( "s" );
+    //         })
+    //         .on( "loaded", function() {
+    //             actions.push( "l" );
+    //         })
+    //         .on( "removed", function() {
+    //             actions.push( "r" );
+    //             done();
+    //         });
+
+    //     ds.save( m ).load( m ).remove( m );
+    // })
+});
