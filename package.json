@@ -1,20 +1,26 @@
 {
-    "name": "blueprint",
-    "version": "2.1.4",
-    "main": "./lib/blueprint",
-    "description": "A sleek and simple interface for building powerful Javascript classes",
-    "keywords": [ "blueprint", "oop", "class", "object" ],
-    "author": "Roi Avinoam <avinoamr@gmail.com>",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/avinoamr/blueprint.js.git"
-    },
-    "devDependencies": {
-        "mocha": "*",
-        "bower": "*"
-    },
-    "scripts": {
-        "test": "node_modules/mocha/bin/mocha"
-    }
+  "name": "blueprint",
+  "version": "2.1.5",
+  "main": "./lib/blueprint",
+  "description": "A sleek and simple interface for building powerful Javascript classes",
+  "keywords": [
+    "blueprint",
+    "oop",
+    "class",
+    "object"
+  ],
+  "author": "Roi Avinoam <avinoamr@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avinoamr/blueprint.js.git"
+  },
+  "devDependencies": {
+    "bower": "*",
+    "mocha": "*",
+    "request": "^2.65.0"
+  },
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha"
+  }
 }

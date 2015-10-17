@@ -4,15 +4,15 @@ var blueprint = require( ".." );
 describe( "blueprint", function() {
 
     it( "creates an empty class with the correct name", function() {
-        var A = blueprint( "A" ).create();
+        var A = blueprint( "A" ).compile();
         assert.equal( A.name, "A" );
     });
 
 
     it( "evaluates instanceof correctly", function() {
-        var Animal = blueprint( "Animal" ).create();
-        var Dog = Animal.extend( "Dog" ).create();
-        var Cat = Animal.extend( "Cat" ).create();
+        var Animal = blueprint( "Animal" ).compile();
+        var Dog = Animal.extend( "Dog" ).compile();
+        var Cat = Animal.extend( "Cat" ).compile();
 
         // animal is an animal
         assert( new Animal() instanceof Animal );
@@ -31,7 +31,7 @@ describe( "blueprint", function() {
 
 
     it( "keeps a reference to the constructor", function() {
-        var Dog = blueprint( "Dog" ).create();
+        var Dog = blueprint( "Dog" ).compile();
         assert.equal( new Dog().constructor.name, "Dog" );
     });
 
@@ -41,13 +41,13 @@ describe( "blueprint", function() {
             .define( "say", function() {
                 throw new Error( "Abstract method not implemented");
             })
-            .create();
+            .compile();
 
         var Dog = Animal.extend( "Dog" )
             .define( "say", function() {
                 return "Whoof";
             })
-            .create();
+            .compile();
 
         assert.throws( function() { new Animal().say() } );
         assert.equal( new Dog().say(), "Whoof" );
@@ -59,20 +59,20 @@ describe( "blueprint", function() {
             .define( "say", function() {
                 return "Whoof";
             })
-            .create();
+            .compile();
 
         var Echoable = blueprint( "Echoable" )
             .define( "echo", function( something ) {
                 return something;
             })
-            .create();
+            .compile();
 
         var EchoableDog = Dog.extend( "EchoableDog" )
             .mixin( Echoable )
             .define( "sleep", function() {
                 return "Zzz...";
             })
-            .create();
+            .compile();
     });
 
 
@@ -82,7 +82,7 @@ describe( "blueprint", function() {
                 this.trigger( "sleep", "arg1", "arg2" );
                 return "Zzz...";
             })
-            .create();
+            .compile();
 
         assert.equal( new Dog().sleep(), "Zzz..." ); // no errors
         var d1 = new Dog();
@@ -113,7 +113,7 @@ describe( "blueprint", function() {
             .define( "bark", function() {
                 return "Whoof"
             })
-            .create();
+            .compile();
 
         assert.equal( new DisorientedDog().bark(), "Meow..." )
     })
@@ -130,7 +130,7 @@ describe( "blueprint", function() {
             .define( "bark", function() {
                 return "Whoof"
             })
-            .create();
+            .compile();
 
         assert.equal( new DisorientedDog().bark(), "Meow..." )
     })
@@ -141,7 +141,7 @@ describe( "blueprint", function() {
             .init(function() {
                 this.args = arguments
             })
-            .create();
+            .compile();
 
         var d1 = new Dog( 1, 2 );
         var d2 = new Dog( "hello" )
@@ -161,7 +161,7 @@ describe( "blueprint", function() {
             return "bar";
         }
         var Dog = blueprint( Class )
-            .create();
+            .compile();
 
         assert.equal( Dog.foo(), "bar" );
         assert.equal( new Dog().hello(), "world" );
@@ -178,7 +178,7 @@ describe( "built-in decorators", function() {
         var A = blueprint()
             .static()
             .define( "echo", function( v ) { return v })
-            .create();
+            .compile();
 
         assert.equal( typeof new A().echo, "undefined" );
         assert.equal( A.echo( 15 ), 15 );
@@ -192,7 +192,7 @@ describe( "built-in decorators", function() {
 
             .bind(function() { return { foo: ++i } })
             .define( "i", function() { return this.foo })
-            .create();
+            .compile();
 
         assert.equal( new A().work(), "world" );
         assert.equal( new A().i(), 1 );
@@ -203,7 +203,7 @@ describe( "built-in decorators", function() {
         var A = blueprint()
             .alias( "hello" )
             .define( "world", function() { return 12 })
-            .create();
+            .compile();
 
         assert.equal( new A().hello(), 12 );
         assert.equal( new A().world(), 12 );
@@ -215,7 +215,7 @@ describe( "built-in decorators", function() {
             .define( "hello", function() {
                 return "world";
             })
-            .create();
+            .compile();
 
         new A().on( "hello_ev", function( name, options ) {
             assert.equal( name, "hello_ev" );
@@ -234,7 +234,7 @@ describe( "thenable, then and catch", function() {
             .define( "work", function( value, fulfill, reject ) {
                 fulfill( value * 2 )
             })
-            .create();
+            .compile();
 
         new A().work( 15 ).then(function( v ) {
             assert.equal( v, 30 );
@@ -251,7 +251,7 @@ describe( "thenable, then and catch", function() {
             .then(function( value ) {
                 return value * 2;
             })
-            .create();
+            .compile();
 
         assert.equal( new A().work( 123 ), 123 * 4 );
     });
@@ -266,7 +266,7 @@ describe( "thenable, then and catch", function() {
                 assert.equal( err.message, "Bad" );
                 done();
             })
-            .create();
+            .compile();
         new A().work();
     })
 
@@ -280,7 +280,7 @@ describe( "thenable, then and catch", function() {
             .then(function( v ) {
                 return v * 2;
             })
-            .create();
+            .compile();
 
         new A().work( 123 ).then(function( v ) {
             assert.equal( v, 123 * 4 );
@@ -299,7 +299,7 @@ describe( "thenable, then and catch", function() {
                 assert.equal( err.message, "Bad" );
                 done();
             })
-            .create();
+            .compile();
         new A().work();
     });
 
@@ -321,7 +321,7 @@ describe( "thenable, then and catch", function() {
                 fulfill( value / 4 )
             })
 
-            .create();
+            .compile();
 
         new A().work( 123 ).then(function( v ) {
             assert.equal( v, 123 );
@@ -371,7 +371,7 @@ describe( "Model", function() {
     });
 
     it( "forwards all calls to the underlying backend", function( done ) {
-        var Dog = Model.extend( "Dog" ).create();
+        var Dog = Model.extend( "Dog" ).compile();
 
         var actions = [];
         Model.backend({
@@ -406,8 +406,8 @@ describe( "Model", function() {
 
     it( "supports backend inheritance and override", function( done ) {
 
-        var Dog = Model.extend( "Dog" ).create();
-        var Cat = Model.extend( "Cat" ).create();
+        var Dog = Model.extend( "Dog" ).compile();
+        var Cat = Model.extend( "Cat" ).compile();
 
         // set the root datastore
         Model.backend({
@@ -433,7 +433,7 @@ describe( "Model", function() {
 
     it( "supports removal of backends", function( done ) {
 
-        var Dog = Model.extend( "Dog" ).create();
+        var Dog = Model.extend( "Dog" ).compile();
 
         var d = new Dog();
         Model.backend({
